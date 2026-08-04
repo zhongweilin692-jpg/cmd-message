@@ -2,29 +2,45 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>CMD终端</title>
+<title>CMD励志终端</title>
 <style>
+*{box-sizing:border-box;margin:0;padding:0;}
 body{
   background:#000000;
-  color:#33ff33;
+  color:#39ff14;
   font-family: Consolas,"Courier New",monospace;
-  padding:25px;
-  font-size:19px;
-  margin:0;
+  padding:30px;
+  font-size:20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column; /* 垂直排列：文字在上，画布在下 */
+  gap: 50px;
 }
 @keyframes blink {
-  0% {opacity:1;}
-  50% {opacity:0;}
-  100% {opacity:1;}
+  50%{opacity:0;}
 }
 .cursor{
-  animation: blink 0.8s infinite;
+  animation:blink 0.8s infinite;
+}
+canvas{
+  border:1px solid #39ff14;
+  /* 图案固定位置，不会晃动 */
+  flex-shrink: 0;
 }
 </style>
 </head>
 <body>
-<span id="typeText"></span><span class="cursor">_</span>
+<!-- 上方打字区域 -->
+<div class="text-box">
+  <div id="typeText"></div>
+  <span class="cursor">_</span>
+</div>
+
+<!-- 下方固定不动的代码绘图区域 -->
+<canvas id="drawCanvas" width="320" height="240"></canvas>
+
 <script>
+// ========== 1. 逐字打出文案（仅文字动态，下方图画静止） ==========
 let content = "不努力和咸鱼有什么区别？";
 let pos = 0;
 let box = document.getElementById("typeText");
@@ -35,7 +51,49 @@ function typing(){
     setTimeout(typing,130);
   }
 }
-setTimeout(typing,700);
+setTimeout(typing,600);
+
+// ========== 2. 页面加载立刻绘制图画，画完就固定不动 ==========
+const canvas = document.getElementById("drawCanvas");
+const ctx = canvas.getContext("2d");
+ctx.strokeStyle = "#39ff14";
+ctx.lineWidth = 2;
+
+// 绘制向上攀登的山峰
+ctx.beginPath();
+ctx.moveTo(20,220);
+ctx.lineTo(90,120);
+ctx.lineTo(170,170);
+ctx.lineTo(280,80);
+ctx.lineTo(280,220);
+ctx.closePath();
+ctx.stroke();
+
+// 绘制向上箭头
+ctx.beginPath();
+ctx.moveTo(140,200);
+ctx.lineTo(140,100);
+ctx.lineTo(122,118);
+ctx.moveTo(140,100);
+ctx.lineTo(158,118);
+ctx.stroke();
+
+// 绘制太阳
+ctx.beginPath();
+ctx.arc(250,60,25,0,Math.PI*2);
+ctx.stroke();
+// 太阳光芒
+for(let a=0;a<8;a++){
+  let angle = a * Math.PI / 4;
+  ctx.moveTo(250 + Math.cos(angle)*30, 60 + Math.sin(angle)*30);
+  ctx.lineTo(250 + Math.cos(angle)*42, 60 + Math.sin(angle)*42);
+}
+ctx.stroke();
+
+// 画布上的小字
+ctx.fillStyle="#39ff14";
+ctx.font="15px Consolas";
+ctx.fillText("唯有努力向上",70,50);
 </script>
 </body>
 </html>
