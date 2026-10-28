@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>凌晨四点，还在改标题的人</title>
+<meta name="description" content="一个关于努力的短故事。献给所有在深夜还亮着屏幕的人。">
+<style>
+  :root{
+    --bg:#05070d;
+    --bg-2:#080c16;
+    --ink:#e9eef8;
+    --ink-2:#b9c6d8;
+    --muted:#76839a;
+    --cyan:#3ee8ff;
+    --violet:#8b5cf6;
+    --amber:#ffb86b;
+    --line:rgba(120,160,205,.13);
+    --mono:"Consolas","SFMono-Regular","JetBrains Mono",ui-monospace,monospace;
+    --sans:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:19px;
+    line-height:1.95;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:rgba(62,232,255,.24);color:#fff;}
+
+  /* ---------- 背景层 ---------- */
+  .bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0;}
+  .bg-grid{
+    position:absolute;inset:-2px;
+    background-image:
+      linear-gradient(to right,rgba(110,150,200,.075) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(110,150,200,.075) 1px,transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(ellipse 92% 76% at 50% 0%,#000 0%,transparent 82%);
+    -webkit-mask-image:radial-gradient(ellipse 92% 76% at 50% 0%,#000 0%,transparent 82%);
+  }
+  .bg-glow{
+    position:absolute;top:-30vh;left:50%;transform:translateX(-50%);
+    width:1150px;height:860px;
+    background:
+      radial-gradient(closest-side,rgba(62,232,255,.2),transparent 72%),
+      radial-gradient(closest-side,rgba(139,92,246,.18),transparent 76%);
+    filter:blur(18px);
+    animation:breathe 11s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{opacity:.72;transform:translateX(-50%) scale(1);}
+    50%{opacity:1;transform:translateX(-50%) scale(1.07);}
+  }
+
+  /* ---------- 进度条 ---------- */
+  .progress{
+    position:fixed;top:0;left:0;height:2px;width:0%;
+    background:linear-gradient(90deg,var(--cyan),var(--violet));
+    z-index:99;
+    box-shadow:0 0 14px rgba(62,232,255,.6);
+    transition:width .12s linear;
+  }
+
+  /* ---------- 开场 ---------- */
+  .hero{
+    position:relative;z-index:2;
+    min-height:100vh;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:8vh 7vw 12vh;
+    max-width:1240px;margin:0 auto;
+  }
+  .tag{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:14px;letter-spacing:.14em;
+    color:var(--cyan);text-transform:uppercase;
+    margin-bottom:42px;
+    opacity:0;animation:fadeUp .9s .2s forwards;
+  }
+  .tag .dot{
+    width:7px;height:7px;border-radius:50%;background:var(--cyan);
+    box-shadow:0 0 10px var(--cyan);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+  .hero-q{
+    font-size:clamp(26px,6.8vw,66px);
+    line-height:1.34;
+    font-weight:800;
+    letter-spacing:-.02em;
+    min-height:1.34em;
+    text-wrap:balance;
+    background:linear-gradient(120deg,#ffffff 0%,#bde9ff 44%,#9b7bff 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+    opacity:0;animation:fadeUp 1s .5s forwards;
+  }
+  .caret{
+    display:inline-block;width:3px;height:.92em;
+    vertical-align:-.08em;margin-left:6px;
+    background:var(--cyan);
+    box-shadow:0 0 12px var(--cyan);
+    animation:blink 1s step-end infinite;
+  }
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+  .hero-sub{
+    margin-top:40px;max-width:660px;
+    font-size:20px;color:var(--ink-2);
+    opacity:0;animation:fadeUp 1s 1.1s forwards;
+  }
+  .hero-sub strong{color:#fff;font-weight:600;}
+  .hero-meta{
+    margin-top:56px;
+    display:flex;flex-wrap:wrap;gap:14px 36px;
+    font-family:var(--mono);font-size:14px;color:var(--muted);
+    opacity:0;animation:fadeUp 1s 1.4s forwards;
+  }
+  .hero-meta span::before{content:"> ";color:var(--cyan);opacity:.7;}
+
+  .scroll-hint{
+    position:absolute;left:7vw;bottom:5vh;
+    font-family:var(--mono);font-size:13px;letter-spacing:.2em;
+    color:var(--muted);
+    display:flex;align-items:center;gap:12px;
+    opacity:0;animation:fadeUp 1s 1.8s forwards;
+  }
+  .scroll-hint i{
+    display:block;width:1px;height:34px;
+    background:linear-gradient(to bottom,var(--cyan),transparent);
+    animation:drop 2.2s ease-in-out infinite;
+  }
+  @keyframes drop{0%,100%{opacity:.2;transform:scaleY(.6);transform-origin:top;}50%{opacity:1;transform:scaleY(1);}}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
+
+  /* ---------- 通用章节 ---------- */
+  .wrap{position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:0 7vw;}
+  section{position:relative;}
+
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.7,.3,1),transform .9s cubic-bezier(.2,.7,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  .prologue{padding-top:14vh;padding-bottom:8vh;}
+  .prologue p{
+    font-size:clamp(21px,2.5vw,28px);
+    line-height:1.8;color:var(--ink-2);font-weight:300;
+    max-width:780px;
+  }
+  .prologue p + p{margin-top:22px;}
+  .prologue .dim{color:var(--muted);}
+  .prologue .lit{color:#fff;font-weight:600;}
+
+  /* ---------- 幕 ---------- */
+  .act{padding-top:7vh;padding-bottom:7vh;border-top:1px solid var(--line);}
+  .act-head{
+    display:flex;align-items:baseline;gap:20px;margin-bottom:52px;flex-wrap:wrap;
+  }
+  .act-no{
+    font-family:var(--mono);font-size:13px;letter-spacing:.18em;
+    color:var(--cyan);padding:5px 12px;border:1px solid rgba(62,232,255,.28);
+    border-radius:100px;white-space:nowrap;
+  }
+  .act-time{
+    font-family:var(--mono);font-size:14px;color:var(--muted);letter-spacing:.08em;
+  }
+  .act-grid{
+    display:grid;grid-template-columns:1.15fr .85fr;
+    gap:clamp(32px,5vw,72px);align-items:center;
+  }
+  .act-grid.flip{grid-template-columns:.85fr 1.15fr;}
+  .act-grid.flip .act-text{order:2;}
+  .act-grid.flip .act-art{order:1;}
+
+  .act h2{
+    font-size:clamp(27px,3.4vw,40px);
+    line-height:1.42;font-weight:800;letter-spacing:-.01em;
+    margin-bottom:30px;
+  }
+  .act p{color:var(--ink-2);font-size:19px;}
+  .act p + p{margin-top:20px;}
+  .act .hl{
+    color:#fff;font-weight:600;
+    background:linear-gradient(180deg,transparent 66%,rgba(62,232,255,.13) 66%);
+  }
+  .act .quote-line{
+    margin-top:34px;padding-left:22px;
+    border-left:2px solid rgba(62,232,255,.5);
+    color:#fff;font-size:20px;font-weight:500;line-height:1.75;
+  }
+  .act .quote-line em{font-style:normal;color:var(--cyan);}
+
+  /* ---------- 插图 ---------- */
+  .act-art{position:relative;}
+  .act-art svg{width:100%;height:auto;display:block;overflow:visible;}
+  .act-art .frame{
+    position:relative;border-radius:16px;
+    border:1px solid var(--line);
+    background:radial-gradient(120% 100% at 50% 0%,rgba(62,232,255,.06),rgba(8,12,22,.5) 62%);
+    padding:26px 22px;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.04);
+    overflow:hidden;
+  }
+  .act-art .frame::after{
+    content:"";position:absolute;inset:0;
+    background-image:linear-gradient(rgba(110,150,200,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(110,150,200,.05) 1px,transparent 1px);
+    background-size:22px 22px;pointer-events:none;
+    mask-image:radial-gradient(ellipse at 50% 40%,#000,transparent 82%);
+    -webkit-mask-image:radial-gradient(ellipse at 50% 40%,#000,transparent 82%);
+  }
+  .cap{
+    font-family:var(--mono);font-size:12.5px;color:var(--muted);
+    letter-spacing:.06em;text-align:center;margin-top:16px;
+  }
+
+  /* 线条绘制动画（长度由 JS 写入 --len，此处统一走 CSS 变量，避免行内样式压过类） */
+  .draw path,.draw line,.draw circle,.draw rect,.draw polyline{
+    stroke-dasharray:var(--len,600);
+    stroke-dashoffset:var(--len,600);
+    transition:stroke-dashoffset 1.8s cubic-bezier(.4,.1,.2,1);
+  }
+  .in .draw path,.in .draw line,.in .draw circle,.in .draw rect,.in .draw polyline{
+    stroke-dashoffset:0;
+  }
+
+  /* ---------- 尾声 ---------- */
+  .epilogue{padding-top:12vh;padding-bottom:10vh;border-top:1px solid var(--line);}
+  .epilogue .big{
+    font-size:clamp(24px,3.2vw,36px);line-height:1.62;font-weight:700;
+    max-width:860px;margin-bottom:36px;
+  }
+  .epilogue p{color:var(--ink-2);max-width:760px;}
+  .epilogue p + p{margin-top:20px;}
+  .epilogue .turn{
+    margin-top:44px;color:#fff;font-size:clamp(20px,2.4vw,26px);
+    font-weight:600;line-height:1.72;
+  }
+  .epilogue .turn span{
+    background:linear-gradient(110deg,var(--cyan),#a78bfa);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+
+  /* ---------- 寄语 ---------- */
+  .quote{
+    padding:16vh 7vw;text-align:center;position:relative;z-index:2;
+    border-top:1px solid var(--line);
+    background:radial-gradient(ellipse 70% 100% at 50% 100%,rgba(139,92,246,.13),transparent 70%);
+  }
+  .quote .mark{
+    font-family:var(--mono);font-size:13px;letter-spacing:.34em;
+    color:var(--cyan);text-transform:uppercase;margin-bottom:46px;
+  }
+  .quote .main{
+    font-size:clamp(28px,4.6vw,54px);
+    font-weight:800;line-height:1.5;letter-spacing:-.015em;
+    max-width:900px;margin:0 auto;
+  }
+  .quote .main .l1{
+    background:linear-gradient(120deg,#fff,#c7e9ff);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .quote .main .l2{
+    display:block;margin-top:12px;
+    background:linear-gradient(120deg,var(--cyan),#a78bfa 70%,#ff9ad5);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 28px rgba(139,92,246,.28));
+  }
+  .quote .tail{
+    margin-top:48px;color:var(--ink-2);font-size:19px;max-width:620px;margin-left:auto;margin-right:auto;
+  }
+  .quote .actions{
+    margin-top:52px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  }
+  .btn{
+    font-family:var(--sans);font-size:15px;font-weight:600;
+    padding:13px 26px;border-radius:100px;cursor:pointer;
+    text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+    transition:transform .2s,box-shadow .25s,background .25s,border-color .25s;
+    border:1px solid rgba(62,232,255,.3);
+    background:rgba(62,232,255,.07);color:#d9f6ff;
+  }
+  .btn:hover{transform:translateY(-2px);background:rgba(62,232,255,.14);box-shadow:0 12px 30px -14px rgba(62,232,255,.6);}
+  .btn.ghost{border-color:rgba(160,180,210,.22);background:transparent;color:var(--ink-2);}
+  .btn.ghost:hover{border-color:rgba(160,180,210,.45);color:#fff;box-shadow:none;background:rgba(255,255,255,.03);}
+  .btn:active{transform:translateY(0);}
+  .btn.ok{border-color:rgba(62,232,255,.7);background:rgba(62,232,255,.18);color:#fff;}
+
+  /* ---------- 页脚 ---------- */
+  footer{
+    position:relative;z-index:2;
+    padding:44px 7vw 60px;text-align:center;
+    border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:13px;color:var(--muted);
+    line-height:2.1;
+  }
+  footer .sig{color:#cfe4f5;letter-spacing:.06em;}
+  footer .fine{opacity:.72;font-size:12px;max-width:600px;margin:10px auto 0;}
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:860px){
+    body{font-size:17.5px;line-height:1.92;}
+    .hero{padding:12vh 6vw 14vh;}
+    .act-grid,.act-grid.flip{grid-template-columns:1fr;gap:38px;}
+    .act-grid.flip .act-text{order:1;}
+    .act-grid.flip .act-art{order:2;}
+    .act{padding-top:6vh;padding-bottom:6vh;}
+    .act-head{margin-bottom:38px;}
+    .scroll-hint{display:none;}
+    .prologue{padding-top:10vh;padding-bottom:6vh;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .reveal{opacity:1;transform:none;}
+    .draw path,.draw line,.draw circle,.draw rect,.draw polyline{stroke-dashoffset:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+</div>
+
+<!-- ============ 开场 ============ -->
+<header class="hero">
+  <div class="tag"><span class="dot"></span>CMD · 一段没被记录的努力</div>
+  <h1 class="hero-q"><span id="typeTarget"></span><span class="caret"></span></h1>
+  <p class="hero-sub">
+    它看着像一句口号。<strong>其实是一个人凌晨四点写给自己的备忘。</strong>
+  </p>
+  <div class="hero-meta">
+    <span>一个人</span>
+    <span>两年</span>
+    <span>四幕</span>
+    <span>约 3 分钟</span>
+  </div>
+  <div class="scroll-hint"><i></i>向下滚动</div>
+</header>
+
+<!-- ============ 序 ============ -->
+<section class="prologue wrap reveal">
+  <p>有人在深夜里问过自己这句话，然后是关掉电脑，睡了。</p>
+  <p class="lit">也有人问完这句话，把电脑重新打开。</p>
+  <p class="dim">故事从这里开始。</p>
+</section>
+
+<!-- ============ 第一幕 ============ -->
+<section class="act wrap">
+  <div class="act-head reveal">
+    <span class="act-no">第一幕 · 起点</span>
+    <span class="act-time">2019 年冬 / 义乌</span>
+  </div>
+  <div class="act-grid">
+    <div class="act-text reveal">
+      <h2>他先听见的，<br>是胶带枪的声音</h2>
+      <p>老陈那年 34 岁，在仓库干了六年。每天撕掉四百卷胶带，手上全是一道一道的口子，冬天沾了水就疼。</p>
+      <p>晚上十点，工友去打牌。他打开一台二手笔记本，从 Excel 的 <span class="hl">VLOOKUP</span> 开始学，一个函数一个函数地抄在本子上。</p>
+      <div class="quote-line">同事笑他：<em>「打工的命，操老板的心。」</em><br>他头都没抬：「我不想四十岁还在撕胶带。」</div>
+    </div>
+    <div class="act-art reveal">
+      <div class="frame">
+        <svg class="draw" viewBox="0 0 320 240" fill="none" stroke="#3ee8ff" stroke-width="1.6" stroke-linecap="round">
+          <!-- 胶带卷 -->
+          <circle cx="118" cy="150" r="46" style="--len:300"/>
+          <circle cx="118" cy="150" r="20" style="--len:130"/>
+          <!-- 拉出的胶带 -->
+          <path d="M163 132 L246 96" style="--len:90"/>
+          <path d="M163 168 L246 204" style="--len:90"/>
+          <path d="M246 96 L246 204" stroke-dasharray="0" style="--len:110"/>
+          <!-- 窗 -->
+          <rect x="196" y="26" width="78" height="46" rx="3" style="--len:250" stroke="rgba(139,92,246,.9)"/>
+          <line x1="235" y1="26" x2="235" y2="72" stroke="rgba(139,92,246,.55)" style="--len:46"/>
+          <line x1="196" y1="49" x2="274" y2="49" stroke="rgba(139,92,246,.55)" style="--len:78"/>
+          <!-- 深夜的星 -->
+          <circle cx="52" cy="52" r="1.6" fill="#3ee8ff" stroke="none"/>
+          <circle cx="86" cy="34" r="1.2" fill="#3ee8ff" stroke="none"/>
+          <circle cx="40" cy="92" r="1" fill="#3ee8ff" stroke="none"/>
+        </svg>
+      </div>
+      <div class="cap">胶带卷 · 二手笔记本 · 凌晨</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第二幕 ============ -->
+<section class="act wrap">
+  <div class="act-head reveal">
+    <span class="act-no">第二幕 · 跌落</span>
+    <span class="act-time">2020 年春 / 三个月</span>
+  </div>
+  <div class="act-grid flip">
+    <div class="act-text reveal">
+      <h2>217 个商品<br>和一条零</h2>
+      <p>老板说试试跨境，把一家没人管的店丢给他：反正也不亏。</p>
+      <p>他上架了 217 个商品，每一个标题自己一个字一个字校对。三个月过去，结果是零单——<span class="hl">不是少，是零。</span></p>
+      <p>老板说算了，撤店吧。他问能不能再给三十天，工资可以不要。</p>
+      <div class="quote-line">那天他第一次知道，<em>努力和结果之间，并不总是连着的。</em></div>
+    </div>
+    <div class="act-art reveal">
+      <div class="frame">
+        <svg class="draw" viewBox="0 0 320 240" fill="none" stroke="#3ee8ff" stroke-width="1.6" stroke-linecap="round">
+          <!-- 坐标轴 -->
+          <line x1="34" y1="30" x2="34" y2="200" stroke="rgba(120,160,205,.45)" style="--len:170"/>
+          <line x1="34" y1="200" x2="292" y2="200" stroke="rgba(120,160,205,.45)" style="--len:258"/>
+          <!-- 死平的曲线 -->
+          <path d="M40 186 C82 184 96 190 130 188 C168 186 186 191 220 189 C252 187 266 190 288 189" style="--len:270"/>
+          <!-- 零 -->
+          <text x="146" y="128" fill="#ffb86b" stroke="none" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-weight="700" font-size="76" opacity=".92">0</text>
+          <text x="238" y="182" fill="rgba(120,160,205,.85)" stroke="none" font-family="Consolas,monospace" font-size="11">DAY 90</text>
+          <text x="44" y="182" fill="rgba(120,160,205,.85)" stroke="none" font-family="Consolas,monospace" font-size="11">DAY 1</text>
+        </svg>
+      </div>
+      <div class="cap">九十个日夜 · 成交：零</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第三幕 ============ -->
+<section class="act wrap">
+  <div class="act-head reveal">
+    <span class="act-no">第三幕 · 转折</span>
+    <span class="act-time">2020 年夏 / 第 89 天</span>
+  </div>
+  <div class="act-grid">
+    <div class="act-text reveal">
+      <h2>他不懂俄语，<br>就一个词一个词查</h2>
+      <p>他把竞品买家的每一条差评打印出来，贴满整面墙，用红笔圈出反复出现的词。有些词他查了七遍才记住。</p>
+      <p>四十七页笔记。第一页写着：<span class="hl">「别人抱怨的地方，就是还没做好的地方。」</span></p>
+      <p>第 89 天，第一单。12.4 美金。他把截图存了下来，到今天还在手机里。</p>
+      <div class="quote-line">买家留了五星，用俄语写：<em>Быстро и аккуратно.</em><br>「快，而且仔细。」——他翻来覆去看了很久。</div>
+    </div>
+    <div class="act-art reveal">
+      <div class="frame">
+        <svg class="draw" viewBox="0 0 320 240" fill="none" stroke="#3ee8ff" stroke-width="1.5" stroke-linecap="round">
+          <!-- 便利贴 -->
+          <rect x="40" y="40" width="66" height="60" rx="3" style="--len:252"/>
+          <rect x="122" y="26" width="66" height="60" rx="3" style="--len:252"/>
+          <rect x="204" y="46" width="66" height="60" rx="3" style="--len:252"/>
+          <rect x="56" y="120" width="66" height="60" rx="3" style="--len:252"/>
+          <rect x="140" y="132" width="66" height="60" rx="3" style="--len:252"/>
+          <!-- 红笔圈 -->
+          <circle cx="155" cy="56" r="24" stroke="#ffb86b" stroke-width="2" opacity=".9" style="--len:160"/>
+          <!-- 笔记条的线 -->
+          <line x1="50" y1="58" x2="96" y2="58" stroke="rgba(120,160,205,.4)" style="--len:46"/>
+          <line x1="50" y1="72" x2="86" y2="72" stroke="rgba(120,160,205,.4)" style="--len:36"/>
+          <line x1="66" y1="138" x2="112" y2="138" stroke="rgba(120,160,205,.4)" style="--len:46"/>
+          <line x1="66" y1="152" x2="102" y2="152" stroke="rgba(120,160,205,.4)" style="--len:36"/>
+          <line x1="214" y1="64" x2="260" y2="64" stroke="rgba(120,160,205,.4)" style="--len:46"/>
+          <line x1="150" y1="150" x2="196" y2="150" stroke="rgba(120,160,205,.4)" style="--len:46"/>
+          <!-- 一条向上的箭头 -->
+          <path d="M246 186 L246 152" stroke="#8b5cf6" style="--len:36"/>
+          <path d="M238 160 L246 152 L254 160" stroke="#8b5cf6" style="--len:24"/>
+        </svg>
+      </div>
+      <div class="cap">47 页笔记 · 一面墙 · 第一条五星</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第四幕 ============ -->
+<section class="act wrap">
+  <div class="act-head reveal">
+    <span class="act-no">第四幕 · 光亮</span>
+    <span class="act-time">2021 年 11 月 / 凌晨</span>
+  </div>
+  <div class="act-grid flip">
+    <div class="act-text reveal">
+      <h2>数字开始跳的那晚，<br>他没有喊</h2>
+      <p>那一年他带了三个人。大促凌晨，后台的成交数字第一次连着往上跳，一条几乎垂直的线。</p>
+      <p>他没有欢呼，没有截图发群。<span class="hl">他只是给妻子发了五个字：「睡吧，店在跑。」</span></p>
+      <p>现在他 37 岁，管着十二个人的团队。位置换了，习惯没换——每天早上，他依然第一个到。</p>
+    </div>
+    <div class="act-art reveal">
+      <div class="frame">
+        <svg class="draw" viewBox="0 0 320 240" fill="none" stroke="#3ee8ff" stroke-width="1.6" stroke-linecap="round">
+          <!-- 地平线 -->
+          <line x1="22" y1="196" x2="298" y2="196" stroke="rgba(120,160,205,.4)" style="--len:276"/>
+          <!-- 日出半圆 -->
+          <path d="M212 196 A46 46 0 0 1 304 196" stroke="#ffb86b" stroke-width="2" style="--len:170"/>
+          <!-- 光芒 -->
+          <line x1="258" y1="132" x2="258" y2="114" stroke="#ffb86b" style="--len:18"/>
+          <line x1="216" y1="146" x2="203" y2="134" stroke="#ffb86b" style="--len:18"/>
+          <line x1="300" y1="146" x2="313" y2="134" stroke="#ffb86b" style="--len:18"/>
+          <!-- 上升的柱 -->
+          <rect x="40" y="160" width="20" height="36" stroke="rgba(62,232,255,.75)" style="--len:112"/>
+          <rect x="76" y="140" width="20" height="56" stroke="rgba(62,232,255,.85)" style="--len:152"/>
+          <rect x="112" y="108" width="20" height="88" stroke="rgba(62,232,255,.95)" style="--len:216"/>
+          <rect x="148" y="70" width="20" height="126" stroke="#3ee8ff" stroke-width="2" style="--len:292"/>
+          <!-- 趋势线 -->
+          <polyline points="50,150 86,130 122,98 158,58" stroke="#8b5cf6" stroke-width="2" style="--len:140"/>
+        </svg>
+      </div>
+      <div class="cap">天亮了 · 店在跑</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 尾声 ============ -->
+<section class="epilogue wrap">
+  <div class="reveal">
+    <div class="big">后来有人问他：努力真的有用吗？</div>
+    <p>他想了想，说：不一定。</p>
+    <p>「努力不欠你一个结果。它只是把『运气』这件事，从天上拽到了地上——让你在它路过的那天，还站在路中间。」</p>
+    <p>「咸鱼不是因为它躺着才叫咸鱼的。是因为它一直相信，明天再翻身，也来得及。」</p>
+    <div class="turn">所以那句话，他没打算换掉。<br><span>不是喊给别人听的，是每天提醒自己一次：别躺。</span></div>
+  </div>
+</section>
+
+<!-- ============ 寄语 ============ -->
+<section class="quote">
+  <div class="mark">结尾寄语</div>
+  <div class="main reveal">
+    <span class="l1">不是每一次努力都会被看见。</span>
+    <span class="l2">但你站着，才有资格被看见。</span>
+  </div>
+  <p class="tail reveal">今晚还有没改完的标题、没回完的消息、没弄明白的一个词——<br>都没关系。你已经在路上了。</p>
+  <div class="actions reveal">
+    <button class="btn" id="copyBtn">复制这段寄语</button>
+    <a class="btn ghost" href="#" id="topBtn">↑ 回到开头，再看一遍</a>
+  </div>
+</section>
+
+<footer>
+  <div class="sig">CMD · 赠每一个还在深夜改标题的人</div>
+  <div class="fine">本页为叙事创作，人物与细节经过文学化处理。</div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- 打字机 ---------- */
+  var text = "不努力和咸鱼有什么区别？";
+  var target = document.getElementById("typeTarget");
+  var i = 0;
+  var speed = 115;
+  function type(){
+    if(i <= text.length){
+      target.textContent = text.slice(0, i);
+      i++;
+      setTimeout(type, i > 4 ? speed : 260);
+    }
+  }
+  if(target){
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+      target.textContent = text;
+    }else{
+      setTimeout(type, 700);
+    }
+  }
+
+  /* ---------- 滚动进度 ---------- */
+  var bar = document.getElementById("progress");
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var p = h > 0 ? (window.scrollY / h) * 100 : 0;
+    bar.style.width = Math.max(0, Math.min(100, p)) + "%";
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  /* ---------- 进场动画 ---------- */
+  var items = document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add("in");
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:0.16, rootMargin:"0px 0px -8% 0px"});
+    items.forEach(function(el){ io.observe(el); });
+  }else{
+    items.forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* ---------- 线条描边长度自适应 ---------- */
+  document.querySelectorAll(".draw path, .draw line, .draw circle, .draw rect, .draw polyline").forEach(function(el){
+    var len = 600;
+    try{
+      if(typeof el.getTotalLength === "function"){
+        var l = el.getTotalLength();
+        if(l && isFinite(l) && l > 0) len = Math.ceil(l) + 6;
+      }
+    }catch(err){
+      /* 某些元素不支持，用默认值 */
+    }
+    el.style.setProperty("--len", len);
+  });
+  // 补一次：元素已在视口内时，依赖 IntersectionObserver 的 .in 触发描边
+  requestAnimationFrame(function(){
+    document.querySelectorAll(".reveal").forEach(function(el){
+      var r = el.getBoundingClientRect();
+      if(r.top < window.innerHeight * 0.92){
+        el.classList.add("in");
+      }
+    });
+  });
+
+  /* ---------- 复制寄语 ---------- */
+  var copyBtn = document.getElementById("copyBtn");
+  var payload = "不是每一次努力都会被看见。\n但你站着，才有资格被看见。\n—— 赠每一个还在深夜改标题的人";
+  function flash(msg){
+    var old = copyBtn.textContent;
+    copyBtn.textContent = msg;
+    copyBtn.classList.add("ok");
+    setTimeout(function(){
+      copyBtn.textContent = old;
+      copyBtn.classList.remove("ok");
+    }, 1800);
+  }
+  function fallbackCopy(str){
+    var ta = document.createElement("textarea");
+    ta.value = str;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "-1000px";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, str.length);
+    var ok = false;
+    try{ ok = document.execCommand("copy"); }catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  if(copyBtn){
+    copyBtn.addEventListener("click", function(){
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(payload).then(function(){
+          flash("已复制 ✓");
+        }).catch(function(){
+          flash(fallbackCopy(payload) ? "已复制 ✓" : "复制失败，请手动选中");
+        });
+      }else{
+        flash(fallbackCopy(payload) ? "已复制 ✓" : "复制失败，请手动选中");
+      }
+    });
+  }
+
+  /* ---------- 回到开头 ---------- */
+  var topBtn = document.getElementById("topBtn");
+  if(topBtn){
+    topBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  }
+})();
+</script>
+</body>
+</html>
